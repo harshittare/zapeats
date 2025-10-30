@@ -30,16 +30,8 @@ import {
   Delete,
   LocalOffer,
   LocationOn,
-  Payment,
-  Schedule,
   ShoppingCart,
   ArrowBack,
-  ExpandMore,
-  CheckCircle,
-  AccessTime,
-  DeliveryDining,
-  Person,
-  Phone,
   Edit
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -76,7 +68,7 @@ const promoCodes = [
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { items, updateQuantity, removeItem, clearCart, getTotalPrice, getTotalItems } = useCart();
+  const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems } = useCart();
   
   const [selectedAddress, setSelectedAddress] = useState(mockAddresses[0]);
   const [promoCode, setPromoCode] = useState('');
