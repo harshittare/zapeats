@@ -17,21 +17,16 @@ import {
   MenuItem,
   ToggleButton,
   ToggleButtonGroup,
-  Slider,
   Paper,
   IconButton,
-  Badge,
-  Rating,
-  Skeleton
+  Rating
 } from '@mui/material';
 import {
   Search,
   FilterList,
   ViewList,
   ViewModule,
-  LocationOn,
   AccessTime,
-  Star,
   LocalOffer,
   DeliveryDining,
   Favorite,

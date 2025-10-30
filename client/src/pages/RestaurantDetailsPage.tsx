@@ -486,7 +486,6 @@ const RestaurantDetailsPage = () => {
   const handleAddToCart = () => {
     if (!selectedItem) return;
 
-    let itemTotal = selectedItem.price * quantity;
     const selectedCustomizations: any[] = [];
 
     // Calculate customization prices
@@ -501,7 +500,6 @@ const RestaurantDetailsPage = () => {
               options: [option.name],
               additionalPrice: option.price
             });
-            itemTotal += option.price * quantity;
           }
         } else {
           const additionalPrice = selectedOptions.reduce((sum: number, optionName: string) => {
@@ -513,7 +511,6 @@ const RestaurantDetailsPage = () => {
             options: selectedOptions,
             additionalPrice
           });
-          itemTotal += additionalPrice * quantity;
         }
       }
     });
