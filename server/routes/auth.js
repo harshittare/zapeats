@@ -69,6 +69,7 @@ router.post('/register', [
         name: user.name,
         email: user.email,
         phone: user.phone,
+        role: user.role,
         referralCode: user.referralCode
       },
       token
@@ -143,6 +144,7 @@ router.post('/login', [
         email: user.email,
         phone: user.phone,
         avatar: user.avatar,
+        role: user.role,
         loyaltyPoints: user.loyaltyPoints
       },
       token
@@ -252,6 +254,7 @@ router.post('/verify-otp', [
         id: user._id,
         name: user.name,
         phone: user.phone,
+        role: user.role,
         isVerified: user.isVerified
       },
       token

@@ -165,7 +165,12 @@ router.post('/', [
     const deliveryTax = deliveryFee * 0.18;
 
     // Apply discount if coupon code provided
-    let discount = { amount: 0, type: 'none' };
+    let discount = { 
+      amount: 0, 
+      type: '', 
+      couponCode: '', 
+      description: '' 
+    };
     if (couponCode) {
       // Simple coupon logic (in production, use a proper coupon system)
       if (couponCode === 'WELCOME10' && subtotal >= 20) {

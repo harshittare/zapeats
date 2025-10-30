@@ -54,9 +54,9 @@ const orderSchema = new mongoose.Schema({
   },
   discount: {
     amount: { type: Number, default: 0 },
-    type: String, // 'percentage', 'fixed', 'loyalty-points'
-    couponCode: String,
-    description: String
+    type: { type: String, default: '' }, 
+    couponCode: { type: String, default: '' },
+    description: { type: String, default: '' }
   },
   totalAmount: {
     type: Number,
