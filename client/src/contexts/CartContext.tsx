@@ -36,6 +36,7 @@ interface CartContextType extends CartState {
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
+  addTestItems: () => void;
   getItemById: (itemId: string) => CartItem | undefined;
   getTotalPrice: () => number;
   getTotalItems: () => number;
@@ -46,7 +47,8 @@ type CartAction =
   | { type: 'ADD_ITEM'; payload: Omit<CartItem, 'itemTotal'> }
   | { type: 'REMOVE_ITEM'; payload: string }
   | { type: 'UPDATE_QUANTITY'; payload: { itemId: string; quantity: number } }
-  | { type: 'CLEAR_CART' };
+  | { type: 'CLEAR_CART' }
+  | { type: 'SET_RESTAURANT'; payload: { id: string; name: string } };
 
 // Helper function to calculate item total
 const calculateItemTotal = (item: Omit<CartItem, 'itemTotal'>): number => {
@@ -174,6 +176,12 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     case 'CLEAR_CART':
       return initialState;
 
+    case 'SET_RESTAURANT':
+      return {
+        ...state,
+        restaurant: action.payload
+      };
+
     default:
       return state;
   }
@@ -214,6 +222,48 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     dispatch({ type: 'CLEAR_CART' });
   };
 
+  const addTestItems = () => {
+    // Add valid test items with proper MongoDB ObjectIds
+    const testRestaurant = {
+      id: "68fe6677c25dd029fae03c2c",
+      name: "Pizza Palace"
+    };
+
+    const testItems = [
+      {
+        id: "68fe6678c25dd029fae03c38",
+        menuItemId: "68fe6678c25dd029fae03c38",
+        name: "Margherita Pizza",
+        price: 16.99,
+        quantity: 1,
+        restaurant: testRestaurant,
+        customizations: [],
+        itemTotal: 16.99
+      },
+      {
+        id: "68fe6678c25dd029fae03c43", 
+        menuItemId: "68fe6678c25dd029fae03c43",
+        name: "Pepperoni Pizza",
+        price: 19.99,
+        quantity: 1,
+        restaurant: testRestaurant,
+        customizations: [],
+        itemTotal: 19.99
+      }
+    ];
+
+    // Clear cart first
+    dispatch({ type: 'CLEAR_CART' });
+
+    // Add test items
+    testItems.forEach(item => {
+      dispatch({ type: 'ADD_ITEM', payload: item });
+    });
+
+    // Set restaurant
+    dispatch({ type: 'SET_RESTAURANT', payload: testRestaurant });
+  };
+
   const getItemById = (itemId: string) => {
     return state.items.find(item => item.id === itemId);
   };
@@ -232,6 +282,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     removeItem,
     updateQuantity,
     clearCart,
+    addTestItems,
     getItemById,
     getTotalPrice,
     getTotalItems

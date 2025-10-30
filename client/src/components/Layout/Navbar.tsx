@@ -27,7 +27,8 @@ import {
   Favorite,
   History,
   Logout,
-  Login
+  Login,
+  AdminPanelSettings
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -66,6 +67,9 @@ const Navbar = () => {
     ...(isAuthenticated ? [
       { text: 'Favorites', icon: <Favorite />, path: '/favorites' },
       { text: 'Orders', icon: <History />, path: '/orders' },
+      ...(user?.role === 'admin' ? [
+        { text: 'Admin', icon: <AdminPanelSettings />, path: '/admin' }
+      ] : [])
     ] : [])
   ];
 

@@ -6,6 +6,8 @@ import { Toaster } from 'react-hot-toast';
 
 // Import components
 import Navbar from './components/Layout/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
@@ -16,6 +18,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 import ProfilePage from './pages/ProfilePage';
 import FavoritesPage from './pages/FavoritesPage';
+import AdminPage from './pages/AdminPage';
 
 // Context providers
 import { AuthProvider } from './contexts/AuthContext';
@@ -100,16 +103,99 @@ function App() {
                 <Navbar />
                 <main style={{ minHeight: 'calc(100vh - 80px)' }}>
                   <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/restaurants" element={<RestaurantsPage />} />
-                    <Route path="/restaurant/:id" element={<RestaurantDetailsPage />} />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/checkout" element={<CheckoutPage />} />
-                    <Route path="/orders" element={<OrderHistoryPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/favorites" element={<FavoritesPage />} />
+                    {/* Protected Routes - Require Authentication */}
+                    <Route 
+                      path="/" 
+                      element={
+                        <ProtectedRoute>
+                          <HomePage />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/restaurants" 
+                      element={
+                        <ProtectedRoute>
+                          <RestaurantsPage />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/restaurant/:id" 
+                      element={
+                        <ProtectedRoute>
+                          <RestaurantDetailsPage />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/cart" 
+                      element={
+                        <ProtectedRoute>
+                          <CartPage />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/checkout" 
+                      element={
+                        <ProtectedRoute>
+                          <CheckoutPage />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/orders" 
+                      element={
+                        <ProtectedRoute>
+                          <OrderHistoryPage />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/profile" 
+                      element={
+                        <ProtectedRoute>
+                          <ProfilePage />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/favorites" 
+                      element={
+                        <ProtectedRoute>
+                          <FavoritesPage />
+                        </ProtectedRoute>
+                      } 
+                    />
+
+                    {/* Admin-Only Routes */}
+                    <Route 
+                      path="/admin" 
+                      element={
+                        <ProtectedRoute adminOnly={true}>
+                          <AdminPage />
+                        </ProtectedRoute>
+                      } 
+                    />
+
+                    {/* Public Routes - Redirect if already authenticated */}
+                    <Route 
+                      path="/login" 
+                      element={
+                        <PublicRoute>
+                          <LoginPage />
+                        </PublicRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/register" 
+                      element={
+                        <PublicRoute>
+                          <RegisterPage />
+                        </PublicRoute>
+                      } 
+                    />
                   </Routes>
                 </main>
                 <Toaster 

@@ -23,7 +23,7 @@ import {
   Phone
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -67,11 +67,15 @@ type PhoneFormData = {
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { register: registerUser, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [tabValue, setTabValue] = useState(0);
+
+  // Get the intended destination from location state
+  const from = location.state?.from?.pathname || '/';
 
   const emailForm = useForm<EmailFormData>({
     resolver: yupResolver(emailSchema)
@@ -87,7 +91,7 @@ const RegisterPage = () => {
       const { confirmPassword, ...registerData } = data;
       await registerUser(registerData);
       toast.success('Registration successful!');
-      navigate('/');
+      navigate(from, { replace: true });
     } catch (err: any) {
       setError(err.message);
       toast.error(err.message);
@@ -100,7 +104,7 @@ const RegisterPage = () => {
       const { confirmPassword, ...registerData } = data;
       await registerUser(registerData);
       toast.success('Registration successful!');
-      navigate('/');
+      navigate(from, { replace: true });
     } catch (err: any) {
       setError(err.message);
       toast.error(err.message);

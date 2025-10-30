@@ -9,6 +9,7 @@ interface User {
   phone?: string;
   avatar?: string;
   loyaltyPoints: number;
+  role?: 'user' | 'admin';
 }
 
 interface AuthState {

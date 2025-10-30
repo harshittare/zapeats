@@ -20,7 +20,7 @@ import {
   Phone
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -40,9 +40,13 @@ type FormData = {
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+
+  // Get the intended destination from location state
+  const from = location.state?.from?.pathname || '/';
 
   const {
     register,
@@ -57,7 +61,7 @@ const LoginPage = () => {
       setError('');
       await login(data);
       toast.success('Login successful!');
-      navigate('/');
+      navigate(from, { replace: true });
     } catch (err: any) {
       setError(err.message);
       toast.error(err.message);
