@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -19,7 +19,8 @@ import {
   ToggleButtonGroup,
   Paper,
   IconButton,
-  Rating
+  Rating,
+  CircularProgress
 } from '@mui/material';
 import {
   Search,
@@ -34,80 +35,105 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
 
-// Mock data for restaurants
+// Convert API restaurant data to frontend format
+const convertApiRestaurant = (apiRestaurant: any) => {
+  return {
+    id: apiRestaurant._id,
+    name: apiRestaurant.name,
+    description: apiRestaurant.description,
+    image: apiRestaurant.logo || 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400',
+    cuisines: apiRestaurant.cuisines || [],
+    rating: apiRestaurant.rating?.average || 0,
+    reviewCount: apiRestaurant.rating?.count || 0,
+    deliveryTime: `${apiRestaurant.deliveryTime?.min}-${apiRestaurant.deliveryTime?.max} min`,
+    deliveryFee: apiRestaurant.deliveryFee,
+    minimumOrder: apiRestaurant.minimumOrderAmount || 0,
+    priceRange: apiRestaurant.priceRange || '$$',
+    distance: Math.round(Math.random() * 5 * 10) / 10, // Random distance for demo
+    isOpen: apiRestaurant.isOpen,
+    features: apiRestaurant.features || [],
+    offers: apiRestaurant.currentOffers || [],
+    isFavorite: false
+  };
+};
+
+// Mock data for restaurants (your familiar restaurants)
 const mockRestaurants = [
   {
     id: '1',
     name: 'Burger Palace',
     description: 'Gourmet burgers made with premium ingredients',
-    image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400',
-    cuisines: ['American', 'Fast Food'],
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400',
     rating: 4.5,
     reviewCount: 324,
     deliveryTime: '25-30 min',
-    deliveryFee: 249,
-    minimumOrder: 1249,
+    deliveryFee: 0,
     priceRange: '$$',
-    distance: 1.2,
+    cuisines: ['American', 'Burgers'],
     isOpen: true,
-    features: ['vegetarian-options'],
+    distance: '1.2 km',
     offers: ['20% OFF on first order'],
-    isFavorite: false
+    features: [],
+    isFavorite: false,
+    minimumOrder: 0
   },
   {
     id: '2',
     name: 'Pizza Corner',
     description: 'Authentic Italian pizza with fresh toppings',
-    image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400',
-    cuisines: ['Italian', 'Pizza'],
+    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400',
     rating: 4.3,
     reviewCount: 189,
     deliveryTime: '30-35 min',
-    deliveryFee: 289,
-    minimumOrder: 1660,
+    deliveryFee: 2.99,
     priceRange: '$$',
-    distance: 2.1,
+    cuisines: ['Italian', 'Pizza'],  
     isOpen: true,
-    features: ['vegetarian-options', 'vegan-options'],
-    offers: ['Buy 1 Get 1 Free'],
-    isFavorite: true
+    distance: '2.1 km',
+    offers: [],
+    features: [],
+    isFavorite: false,
+    minimumOrder: 0
   },
   {
     id: '3',
     name: 'Sushi Zen',
     description: 'Fresh sushi and Japanese cuisine',
-    image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400',
-    cuisines: ['Japanese', 'Sushi'],
+    image: 'https://images.unsplash.com/photo-1563612202-1314901db998?w=400',
     rating: 4.7,
     reviewCount: 256,
     deliveryTime: '20-25 min',
     deliveryFee: 0,
-    minimumOrder: 2075,
     priceRange: '$$$',
-    distance: 0.8,
+    cuisines: ['Japanese', 'Sushi'],
     isOpen: true,
-    features: ['gluten-free'],
-    offers: ['Free Delivery'],
-    isFavorite: false
+    distance: '0.8 km',
+    offers: ['Buy 1 Get 1 Free'],
+    features: [],
+    isFavorite: false,
+    minimumOrder: 0
   },
   {
     id: '4',
     name: 'Healthy Bowls',
-    description: 'Nutritious bowls and salads for a healthy lifestyle',
+    description: 'Fresh salads and healthy meal bowls',
     image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400',
-    cuisines: ['Healthy', 'Salads'],
     rating: 4.2,
-    reviewCount: 98,
+    reviewCount: 143,
     deliveryTime: '15-20 min',
-    deliveryFee: 207,
-    minimumOrder: 996,
+    deliveryFee: 1.99,
     priceRange: '$',
-    distance: 1.5,
-    isOpen: false,
-    features: ['vegetarian-options', 'vegan-options', 'gluten-free'],
+    cuisines: ['Healthy', 'Salads'],
+    isOpen: true,
+    distance: '1.5 km',
     offers: [],
-    isFavorite: false
+    features: [],
+    isFavorite: false,
+    minimumOrder: 0
   }
 ];
 
@@ -121,10 +147,53 @@ const RestaurantsPage = () => {
   const [sortBy, setSortBy] = useState('rating');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
-  const [favorites, setFavorites] = useState<string[]>(['2']);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // All available options
-  const allCuisines = ['American', 'Italian', 'Japanese', 'Chinese', 'Mexican', 'Indian', 'Thai', 'Fast Food', 'Healthy', 'Pizza', 'Sushi', 'Salads'];
+  // Use mock data (restore original restaurants)
+  useEffect(() => {
+    setLoading(true);
+    // Simulate API loading time
+    setTimeout(() => {
+      setRestaurants(mockRestaurants);
+      setLoading(false);
+    }, 500);
+  }, []);
+
+  // Uncomment below to use real API data
+  /*
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/restaurants`);
+        
+        if (response.data.success) {
+          const convertedRestaurants = response.data.data.restaurants.map(convertApiRestaurant);
+          setRestaurants(convertedRestaurants);
+        }
+      } catch (error) {
+        console.error('Failed to fetch restaurants:', error);
+        toast.error('Failed to load restaurants');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRestaurants();
+  }, []);
+  */
+
+  // All available options (derived from actual restaurant data)
+  const allCuisines = useMemo(() => {
+    const cuisines = new Set<string>();
+    restaurants.forEach(restaurant => {
+      (restaurant.cuisines || []).forEach((cuisine: string) => cuisines.add(cuisine));
+    });
+    return Array.from(cuisines).sort();
+  }, [restaurants]);
+
   const allPriceRanges = ['$', '$$', '$$$', '$$$$'];
   const allFeatures = [
     { id: 'vegetarian-options', label: 'Vegetarian' },
@@ -135,15 +204,15 @@ const RestaurantsPage = () => {
 
   // Filter and sort restaurants
   const filteredRestaurants = useMemo(() => {
-    let filtered = mockRestaurants.filter(restaurant => {
+    let filtered = restaurants.filter(restaurant => {
       // Search filter
       if (searchQuery && !restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !restaurant.cuisines.some(cuisine => cuisine.toLowerCase().includes(searchQuery.toLowerCase()))) {
+          !(restaurant.cuisines || []).some((cuisine: string) => cuisine.toLowerCase().includes(searchQuery.toLowerCase()))) {
         return false;
       }
 
       // Cuisine filter
-      if (selectedCuisines.length > 0 && !selectedCuisines.some(cuisine => restaurant.cuisines.includes(cuisine))) {
+      if (selectedCuisines.length > 0 && !selectedCuisines.some((cuisine: string) => (restaurant.cuisines || []).includes(cuisine))) {
         return false;
       }
 
@@ -184,9 +253,7 @@ const RestaurantsPage = () => {
     });
 
     return filtered;
-  }, [searchQuery, selectedCuisines, priceRange, rating, features, sortBy]);
-
-  const toggleFavorite = (restaurantId: string) => {
+    }, [restaurants, searchQuery, selectedCuisines, priceRange, rating, features, sortBy]);  const toggleFavorite = (restaurantId: string) => {
     setFavorites(prev => 
       prev.includes(restaurantId) 
         ? prev.filter(id => id !== restaurantId)
@@ -292,7 +359,7 @@ const RestaurantsPage = () => {
 
           {/* Cuisines */}
           <Box display="flex" gap={0.5} mb={2} flexWrap="wrap">
-            {restaurant.cuisines.map((cuisine: string) => (
+            {(restaurant.cuisines || []).map((cuisine: string) => (
               <Chip
                 key={cuisine}
                 label={cuisine}
@@ -320,7 +387,7 @@ const RestaurantsPage = () => {
             <Box display="flex" alignItems="center" gap={1}>
               <DeliveryDining fontSize="small" color="primary" />
               <Typography variant="body2">
-                {restaurant.deliveryFee === 0 ? 'Free' : `₹${restaurant.deliveryFee}`}
+                {restaurant.deliveryFee === 0 ? 'Free' : `$${restaurant.deliveryFee}`}
               </Typography>
             </Box>
             <Typography variant="body2" color="text.secondary">
@@ -532,13 +599,19 @@ const RestaurantsPage = () => {
       </Box>
 
       {/* Restaurant Grid */}
-      <Grid container spacing={3}>
-        {filteredRestaurants.map((restaurant, index) => (
-          <Grid item xs={12} sm={6} md={viewMode === 'grid' ? 4 : 12} key={restaurant.id}>
-            <RestaurantCard restaurant={restaurant} index={index} />
-          </Grid>
-        ))}
-      </Grid>
+      {loading ? (
+        <Box display="flex" justifyContent="center" py={8}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Grid container spacing={3}>
+          {filteredRestaurants.map((restaurant, index) => (
+            <Grid item xs={12} sm={6} md={viewMode === 'grid' ? 4 : 12} key={restaurant.id}>
+              <RestaurantCard restaurant={restaurant} index={index} />
+            </Grid>
+          ))}
+        </Grid>
+      )}
 
       {/* No Results */}
       {filteredRestaurants.length === 0 && (

@@ -104,24 +104,15 @@ async function createSampleOrders() {
       {
         user: user._id,
         restaurant: restaurants[1] || restaurant, // Use second restaurant if available
-        items: [
-          {
-            menuItem: menuItems[1] ? menuItems[1]._id : menuItem._id,
-            name: menuItems[1] ? menuItems[1].name : menuItem.name,
-            price: menuItems[1] ? menuItems[1].price : menuItem.price,
-            quantity: 1,
-            customizations: [],
-            itemTotal: menuItems[1] ? menuItems[1].price : menuItem.price
-          }
-        ],
-        subtotal: menuItems[1] ? menuItems[1].price : menuItem.price,
+        items: await getRestaurantMenuItems(restaurants[1] || restaurant, menuItems),
+        subtotal: await calculateSubtotal(restaurants[1] || restaurant, menuItems),
         deliveryFee: (restaurants[1] || restaurant).deliveryFee,
-        serviceFee: (menuItems[1] ? menuItems[1].price : menuItem.price) * 0.05,
-        tax: (menuItems[1] ? menuItems[1].price : menuItem.price) * 0.08,
-        totalAmount: (menuItems[1] ? menuItems[1].price : menuItem.price) + 
+        serviceFee: (await calculateSubtotal(restaurants[1] || restaurant, menuItems)) * 0.05,
+        tax: (await calculateSubtotal(restaurants[1] || restaurant, menuItems)) * 0.08,
+        totalAmount: (await calculateSubtotal(restaurants[1] || restaurant, menuItems)) + 
                     (restaurants[1] || restaurant).deliveryFee + 
-                    ((menuItems[1] ? menuItems[1].price : menuItem.price) * 0.05) + 
-                    ((menuItems[1] ? menuItems[1].price : menuItem.price) * 0.08),
+                    ((await calculateSubtotal(restaurants[1] || restaurant, menuItems)) * 0.05) + 
+                    ((await calculateSubtotal(restaurants[1] || restaurant, menuItems)) * 0.08),
         status: 'preparing',
         paymentMethod: 'cash',
         deliveryAddress: {

@@ -51,6 +51,167 @@ import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
+// Mock order data to match your familiar restaurants
+const mockOrders = [
+  {
+    _id: 'order_001',
+    restaurant: {
+      name: 'Burger Palace',
+      image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400'
+    },
+    items: [
+      {
+        name: 'Classic Beef Burger',
+        quantity: 2,
+        itemTotal: 25.98,
+        menuItem: {
+          image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=100'
+        }
+      },
+      {
+        name: 'French Fries',
+        quantity: 1,
+        itemTotal: 4.99,
+        menuItem: {
+          image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=100'
+        }
+      }
+    ],
+    totalAmount: 32.97,
+    status: 'delivered',
+    createdAt: '2025-10-30T18:30:00Z',
+    deliveryAddress: {
+      street: '123 Main Street',
+      city: 'New York',
+      zipCode: '10001'
+    },
+    actualDeliveryTime: '2025-10-30T19:15:00Z',
+    rating: {
+      overall: 5
+    },
+    review: {
+      comment: 'Amazing burgers! Fast delivery and great taste.'
+    }
+  },
+  {
+    _id: 'order_002',
+    restaurant: {
+      name: 'Pizza Corner',
+      image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'
+    },
+    items: [
+      {
+        name: 'Margherita Pizza',
+        quantity: 1,
+        itemTotal: 18.99,
+        menuItem: {
+          image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=100'
+        }
+      }
+    ],
+    totalAmount: 24.48,
+    status: 'preparing',
+    createdAt: '2025-10-31T12:15:00Z',
+    deliveryAddress: {
+      street: '456 Oak Avenue',
+      city: 'New York',
+      zipCode: '10002'
+    }
+  },
+  {
+    _id: 'order_003',
+    restaurant: {
+      name: 'Sushi Zen',
+      image: 'https://images.unsplash.com/photo-1563612202-1314901db998?w=400'
+    },
+    items: [
+      {
+        name: 'California Roll',
+        quantity: 2,
+        itemTotal: 16.98,
+        menuItem: {
+          image: 'https://images.unsplash.com/photo-1563612202-1314901db998?w=100'
+        }
+      },
+      {
+        name: 'Salmon Nigiri',
+        quantity: 4,
+        itemTotal: 12.96,
+        menuItem: {
+          image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=100'
+        }
+      }
+    ],
+    totalAmount: 32.94,
+    status: 'delivered',
+    createdAt: '2025-10-29T20:45:00Z',
+    deliveryAddress: {
+      street: '789 Pine Street',
+      city: 'New York',
+      zipCode: '10003'
+    },
+    actualDeliveryTime: '2025-10-29T21:30:00Z'
+  },
+  {
+    _id: 'order_004',
+    restaurant: {
+      name: 'Healthy Bowls',
+      image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400'
+    },
+    items: [
+      {
+        name: 'Mediterranean Bowl',
+        quantity: 1,
+        itemTotal: 12.99,
+        menuItem: {
+          image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=100'
+        }
+      },
+      {
+        name: 'Green Smoothie',
+        quantity: 1,
+        itemTotal: 6.99,
+        menuItem: {
+          image: 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=100'
+        }
+      }
+    ],
+    totalAmount: 21.98,
+    status: 'cancelled',
+    createdAt: '2025-10-28T14:20:00Z',
+    deliveryAddress: {
+      street: '321 Elm Street',
+      city: 'New York',
+      zipCode: '10004'
+    }
+  },
+  {
+    _id: 'order_005',
+    restaurant: {
+      name: 'Burger Palace',
+      image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400'
+    },
+    items: [
+      {
+        name: 'Double Cheeseburger',
+        quantity: 1,
+        itemTotal: 15.99,
+        menuItem: {
+          image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=100'
+        }
+      }
+    ],
+    totalAmount: 19.48,
+    status: 'out-for-delivery',
+    createdAt: '2025-10-31T13:45:00Z',
+    deliveryAddress: {
+      street: '555 Broadway',
+      city: 'New York',
+      zipCode: '10005'
+    }
+  }
+];
+
 const OrderHistoryPage = () => {
   const navigate = useNavigate();
   const { addItem } = useCart();
@@ -65,7 +226,45 @@ const OrderHistoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch orders from API
+  // Use mock orders (to match your familiar restaurants)
+  const fetchOrders = async (showLoading = true) => {
+    try {
+      if (showLoading) setLoading(true);
+      setRefreshing(!showLoading);
+
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Filter mock orders based on selected tab
+      const statusFilter = getStatusFilter(selectedTab);
+      let filteredOrders = mockOrders;
+
+      if (statusFilter !== 'all') {
+        if (statusFilter === 'active') {
+          filteredOrders = mockOrders.filter(order => 
+            ['preparing', 'confirmed', 'ready', 'picked-up', 'out-for-delivery'].includes(order.status)
+          );
+        } else if (statusFilter === 'completed') {
+          filteredOrders = mockOrders.filter(order => order.status === 'delivered');
+        } else if (statusFilter === 'cancelled') {
+          filteredOrders = mockOrders.filter(order => order.status === 'cancelled');
+        } else {
+          filteredOrders = mockOrders.filter(order => order.status === statusFilter);
+        }
+      }
+
+      setOrders(filteredOrders);
+    } catch (error) {
+      console.error('Failed to fetch orders:', error);
+      toast.error('Failed to load orders');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Uncomment below to use real API instead of mock data
+  /*
   const fetchOrders = async (showLoading = true) => {
     if (!isAuthenticated) {
       navigate('/login');
@@ -95,6 +294,7 @@ const OrderHistoryPage = () => {
       setRefreshing(false);
     }
   };
+  */
 
   // Get status filter for API
   const getStatusFilter = (tabIndex: number) => {
@@ -110,7 +310,7 @@ const OrderHistoryPage = () => {
   // Fetch orders on component mount and tab change
   useEffect(() => {
     fetchOrders();
-  }, [selectedTab, isAuthenticated]);
+  }, [selectedTab]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -167,6 +367,23 @@ const OrderHistoryPage = () => {
 
   const handleReorder = async (order: any) => {
     try {
+      // Simulate reorder with mock data
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success(`Reordering ${order.items.map((item: any) => item.name).join(', ')} from ${order.restaurant.name}`);
+      
+      // Navigate to restaurants page to show the restaurant
+      navigate('/restaurants');
+    } catch (error: any) {
+      console.error('Reorder failed:', error);
+      toast.error('Failed to reorder');
+    }
+  };
+
+  // Uncomment below to use real API reorder
+  /*
+  const handleReorder = async (order: any) => {
+    try {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/orders/${order._id}/reorder`, {}, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -187,7 +404,49 @@ const OrderHistoryPage = () => {
       toast.error(error.response?.data?.message || 'Failed to reorder');
     }
   };
+  */
 
+  const handleSubmitReview = async () => {
+    if (!selectedOrder || rating === 0) {
+      toast.error('Please provide a rating');
+      return;
+    }
+    
+    try {
+      // Simulate review submission with mock data
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const reviewData = {
+        rating: {
+          overall: rating,
+          food: rating,
+          delivery: rating
+        },
+        review: {
+          comment: reviewText
+        }
+      };
+
+      // Update local order data
+      const updatedOrders = orders.map(order => 
+        order._id === selectedOrder._id 
+          ? { ...order, rating: reviewData.rating, review: reviewData.review }
+          : order
+      );
+      setOrders(updatedOrders);
+      
+      setReviewDialog(false);
+      setRating(0);
+      setReviewText('');
+      toast.success('Review submitted successfully!');
+    } catch (error: any) {
+      console.error('Submit review failed:', error);
+      toast.error('Failed to submit review');
+    }
+  };
+
+  // Uncomment below to use real API review submission
+  /*
   const handleSubmitReview = async () => {
     if (!selectedOrder || rating === 0) {
       toast.error('Please provide a rating');
@@ -235,6 +494,7 @@ const OrderHistoryPage = () => {
       toast.error(error.response?.data?.message || 'Failed to submit review');
     }
   };
+  */
 
   const getTrackingProgress = (status: string) => {
     switch (status) {
