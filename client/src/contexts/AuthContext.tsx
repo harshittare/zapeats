@@ -130,15 +130,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             });
           } catch (apiError) {
             // If API is unavailable and we have a mock token, restore mock user
-            if (token.startsWith('mock_jwt_token_')) {
-              const mockUser: User = {
-                id: 'demo_user_001',
-                name: 'Demo User',
-                email: 'demo@example.com',
-                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-                loyaltyPoints: 250,
-                role: 'user'
-              };
+            if (token.startsWith('mock_jwt_token_') || token.startsWith('mock_admin_token_')) {
+                const isAdmin = token.startsWith('mock_admin_token_');
+                const mockUser: User = {
+                  id: isAdmin ? 'demo_admin_001' : 'demo_user_001',
+                  name: isAdmin ? 'Admin' : 'Demo User',
+                  email: isAdmin ? 'admin@zapeats.com' : 'demo@example.com',
+                  avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+                  loyaltyPoints: 250,
+                  role: isAdmin ? 'admin' : 'user'
+                };
               
               dispatch({
                 type: 'AUTH_SUCCESS',
@@ -188,19 +189,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Mock login - accept any credentials for demo purposes
         await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
         
+        // If the identifier is the admin email, create an admin mock user/token
+        const isAdmin = credentials.identifier === 'admin@zapeats.com';
         const mockUser: User = {
-          id: 'demo_user_001',
+          id: isAdmin ? 'demo_admin_001' : 'demo_user_001',
           name: credentials.identifier.includes('@') 
-            ? credentials.identifier.split('@')[0] 
+            ? (isAdmin ? 'Admin' : credentials.identifier.split('@')[0]) 
             : 'Demo User',
           email: credentials.identifier.includes('@') ? credentials.identifier : undefined,
           phone: !credentials.identifier.includes('@') ? credentials.identifier : undefined,
           avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
           loyaltyPoints: 250,
-          role: 'user'
+          role: isAdmin ? 'admin' : 'user'
         };
         
-        const mockToken = 'mock_jwt_token_' + Date.now();
+        const mockToken = (isAdmin ? 'mock_admin_token_' : 'mock_jwt_token_') + Date.now();
         
         dispatch({
           type: 'AUTH_SUCCESS',
@@ -243,17 +246,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Mock registration - create user from provided data
         await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
         
+        const isAdmin = userData.email === 'admin@zapeats.com';
         const mockUser: User = {
-          id: 'demo_user_' + Date.now(),
+          id: isAdmin ? 'demo_admin_' + Date.now() : 'demo_user_' + Date.now(),
           name: userData.name,
           email: userData.email,
           phone: userData.phone,
           avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
           loyaltyPoints: 0,
-          role: 'user'
+          role: isAdmin ? 'admin' : 'user'
         };
         
-        const mockToken = 'mock_jwt_token_' + Date.now();
+        const mockToken = (isAdmin ? 'mock_admin_token_' : 'mock_jwt_token_') + Date.now();
         
         dispatch({
           type: 'AUTH_SUCCESS',
