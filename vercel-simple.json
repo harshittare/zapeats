@@ -1,0 +1,17 @@
+{
+  "functions": {
+    "api/auth.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/auth.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/client/build/index.html"
+    }
+  ]
+}
