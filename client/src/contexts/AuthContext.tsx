@@ -117,41 +117,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (token) {
         try {
           dispatch({ type: 'AUTH_START' });
-          
-          // Try API first
-          try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/me`);
-            dispatch({
-              type: 'AUTH_SUCCESS',
-              payload: {
-                user: response.data.user,
-                token
-              }
-            });
-          } catch (apiError) {
-            // If API is unavailable and we have a mock token, restore mock user
-            if (token.startsWith('mock_jwt_token_') || token.startsWith('mock_admin_token_')) {
-                const isAdmin = token.startsWith('mock_admin_token_');
-                const mockUser: User = {
-                  id: isAdmin ? 'demo_admin_001' : 'demo_user_001',
-                  name: isAdmin ? 'Admin' : 'Demo User',
-                  email: isAdmin ? 'admin@zapeats.com' : 'demo@example.com',
-                  avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-                  loyaltyPoints: 250,
-                  role: isAdmin ? 'admin' : 'user'
-                };
-              
-              dispatch({
-                type: 'AUTH_SUCCESS',
-                payload: {
-                  user: mockUser,
-                  token
-                }
-              });
-            } else {
-              throw apiError;
+          const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/me`);
+          dispatch({
+            type: 'AUTH_SUCCESS',
+            payload: {
+              user: response.data.user,
+              token
             }
-          }
+          });
         } catch (error) {
           dispatch({ type: 'AUTH_FAILURE' });
           localStorage.removeItem('token');
@@ -160,116 +133,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     checkAuth();
-  }, []);
-
-  const login = async (credentials: LoginCredentials) => {
+  }, []);  const login = async (credentials: LoginCredentials) => {
     try {
       dispatch({ type: 'AUTH_START' });
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, credentials);
       
-      // Try API first, fallback to mock authentication if API unavailable
-      try {
-        const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, credentials);
-        
-        if (response.data.success) {
-          dispatch({
-            type: 'AUTH_SUCCESS',
-            payload: {
-              user: response.data.user,
-              token: response.data.token
-            }
-          });
-          return;
-        } else {
-          throw new Error(response.data.message);
-        }
-      } catch (apiError: any) {
-        // If API is unavailable, use mock authentication
-        console.log('API unavailable, using mock authentication');
-        
-        // Mock login - accept any credentials for demo purposes
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-        
-        // If the identifier is the admin email, create an admin mock user/token
-        const isAdmin = credentials.identifier === 'admin@zapeats.com';
-        const mockUser: User = {
-          id: isAdmin ? 'demo_admin_001' : 'demo_user_001',
-          name: credentials.identifier.includes('@') 
-            ? (isAdmin ? 'Admin' : credentials.identifier.split('@')[0]) 
-            : 'Demo User',
-          email: credentials.identifier.includes('@') ? credentials.identifier : undefined,
-          phone: !credentials.identifier.includes('@') ? credentials.identifier : undefined,
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-          loyaltyPoints: 250,
-          role: isAdmin ? 'admin' : 'user'
-        };
-        
-        const mockToken = (isAdmin ? 'mock_admin_token_' : 'mock_jwt_token_') + Date.now();
-        
+      if (response.data.success) {
         dispatch({
           type: 'AUTH_SUCCESS',
           payload: {
-            user: mockUser,
-            token: mockToken
+            user: response.data.user,
+            token: response.data.token
           }
         });
+      } else {
+        throw new Error(response.data.message);
       }
     } catch (error: any) {
       dispatch({ type: 'AUTH_FAILURE' });
-      throw new Error('Login failed. Please try again.');
+      throw new Error(error.response?.data?.message || 'Login failed');
     }
   };
 
   const register = async (userData: RegisterData) => {
     try {
       dispatch({ type: 'AUTH_START' });
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, userData);
       
-      // Try API first, fallback to mock registration if API unavailable
-      try {
-        const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, userData);
-        
-        if (response.data.success) {
-          dispatch({
-            type: 'AUTH_SUCCESS',
-            payload: {
-              user: response.data.user,
-              token: response.data.token
-            }
-          });
-          return;
-        } else {
-          throw new Error(response.data.message);
-        }
-      } catch (apiError: any) {
-        // If API is unavailable, use mock registration
-        console.log('API unavailable, using mock registration');
-        
-        // Mock registration - create user from provided data
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-        
-        const isAdmin = userData.email === 'admin@zapeats.com';
-        const mockUser: User = {
-          id: isAdmin ? 'demo_admin_' + Date.now() : 'demo_user_' + Date.now(),
-          name: userData.name,
-          email: userData.email,
-          phone: userData.phone,
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-          loyaltyPoints: 0,
-          role: isAdmin ? 'admin' : 'user'
-        };
-        
-        const mockToken = (isAdmin ? 'mock_admin_token_' : 'mock_jwt_token_') + Date.now();
-        
+      if (response.data.success) {
         dispatch({
           type: 'AUTH_SUCCESS',
           payload: {
-            user: mockUser,
-            token: mockToken
+            user: response.data.user,
+            token: response.data.token
           }
         });
+      } else {
+        throw new Error(response.data.message);
       }
     } catch (error: any) {
       dispatch({ type: 'AUTH_FAILURE' });
-      throw new Error('Registration failed. Please try again.');
+      throw new Error(error.response?.data?.message || 'Registration failed');
     }
   };
 

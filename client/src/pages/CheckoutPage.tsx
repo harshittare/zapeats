@@ -269,17 +269,6 @@ const CheckoutPage = () => {
       console.error('Error status:', error.response?.status);
       console.error('Order payload that failed:', JSON.stringify(orderPayload, null, 2));
 
-      // If the network request failed (no response), create a demo order locally
-      if (error.request && !error.response) {
-        console.warn('Network error detected during order creation — falling back to demo order.');
-        const demoOrderId = 'demo_order_' + Date.now();
-        setOrderId(demoOrderId);
-        clearCart();
-        setActiveStep(2);
-        toast.success('Order placed in demo mode! Order #' + demoOrderId);
-        return;
-      }
-
       let errorMessage = 'Failed to create order';
 
       if (error.response) {
@@ -301,6 +290,9 @@ const CheckoutPage = () => {
         } else if (error.response.status >= 500) {
           errorMessage = 'Server error. Please try again later.';
         }
+      } else if (error.request) {
+        // Network error
+        errorMessage = 'Network error. Please check your connection and try again.';
       } else if (error.message) {
         errorMessage = error.message;
       }
