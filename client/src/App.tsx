@@ -103,39 +103,13 @@ function App() {
                 <Navbar />
                 <main style={{ minHeight: 'calc(100vh - 80px)' }}>
                   <Routes>
+                    {/* Public Routes - Available to guests */}
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/restaurants" element={<RestaurantsPage />} />
+                    <Route path="/restaurant/:id" element={<RestaurantDetailsPage />} />
+                    <Route path="/cart" element={<CartPage />} />
+
                     {/* Protected Routes - Require Authentication */}
-                    <Route 
-                      path="/" 
-                      element={
-                        <ProtectedRoute>
-                          <HomePage />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/restaurants" 
-                      element={
-                        <ProtectedRoute>
-                          <RestaurantsPage />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/restaurant/:id" 
-                      element={
-                        <ProtectedRoute>
-                          <RestaurantDetailsPage />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/cart" 
-                      element={
-                        <ProtectedRoute>
-                          <CartPage />
-                        </ProtectedRoute>
-                      } 
-                    />
                     <Route 
                       path="/checkout" 
                       element={
