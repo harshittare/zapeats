@@ -229,7 +229,7 @@ process.on('SIGINT', () => {
 });
 
 process.on('SIGTERM', () => {
-  console.log('\n� Received termination signal, shutting down...');
+  console.log('\n👋 Received termination signal, shutting down...');
   server.close(() => {
     console.log('✅ Server stopped successfully!');
     process.exit(0);
