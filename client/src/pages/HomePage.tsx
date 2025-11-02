@@ -20,7 +20,6 @@ import {
   Star,
   LocalOffer,
   DeliveryDining,
-  Restaurant,
   TrendingUp
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';

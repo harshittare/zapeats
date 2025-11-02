@@ -35,31 +35,6 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import toast from 'react-hot-toast';
-import { useAuth } from '../contexts/AuthContext';
-
-// Convert API restaurant data to frontend format
-const convertApiRestaurant = (apiRestaurant: any) => {
-  return {
-    id: apiRestaurant._id,
-    name: apiRestaurant.name,
-    description: apiRestaurant.description,
-    image: apiRestaurant.logo || 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400',
-    cuisines: apiRestaurant.cuisines || [],
-    rating: apiRestaurant.rating?.average || 0,
-    reviewCount: apiRestaurant.rating?.count || 0,
-    deliveryTime: `${apiRestaurant.deliveryTime?.min}-${apiRestaurant.deliveryTime?.max} min`,
-    deliveryFee: apiRestaurant.deliveryFee,
-    minimumOrder: apiRestaurant.minimumOrderAmount || 0,
-    priceRange: apiRestaurant.priceRange || '$$',
-    distance: Math.round(Math.random() * 5 * 10) / 10, // Random distance for demo
-    isOpen: apiRestaurant.isOpen,
-    features: apiRestaurant.features || [],
-    offers: apiRestaurant.currentOffers || [],
-    isFavorite: false
-  };
-};
 
 // Mock data for restaurants (your familiar restaurants)
 const mockRestaurants = [

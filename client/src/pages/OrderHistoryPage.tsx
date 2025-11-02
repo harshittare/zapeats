@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Container,
   Typography,
@@ -20,9 +21,6 @@ import {
   TextField,
   Tab,
   Tabs,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   LinearProgress,
   CircularProgress
 } from '@mui/material';
@@ -32,24 +30,16 @@ import {
   Restaurant,
   AccessTime,
   LocationOn,
-  Star,
   RateReview,
   Replay,
   Receipt,
   DeliveryDining,
   CheckCircle,
   Cancel,
-  Schedule,
-  ExpandMore,
-  Phone,
-  Help
+  Schedule
 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import axios from 'axios';
 
 // Mock order data to match your familiar restaurants
 const mockOrders = [
@@ -214,8 +204,6 @@ const mockOrders = [
 
 const OrderHistoryPage = () => {
   const navigate = useNavigate();
-  const { addItem } = useCart();
-  const { isAuthenticated, token } = useAuth();
   
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -227,7 +215,7 @@ const OrderHistoryPage = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   // Use mock orders (to match your familiar restaurants)
-  const fetchOrders = async (showLoading = true) => {
+  const fetchOrders = useCallback(async (showLoading = true) => {
     try {
       if (showLoading) setLoading(true);
       setRefreshing(!showLoading);
@@ -261,7 +249,7 @@ const OrderHistoryPage = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [selectedTab]);
 
   // Uncomment below to use real API instead of mock data
   /*
@@ -310,7 +298,7 @@ const OrderHistoryPage = () => {
   // Fetch orders on component mount and tab change
   useEffect(() => {
     fetchOrders();
-  }, [selectedTab]);
+  }, [fetchOrders]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

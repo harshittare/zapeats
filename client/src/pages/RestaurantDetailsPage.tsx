@@ -25,10 +25,7 @@ import {
   Checkbox,
   TextField,
   IconButton,
-  Badge,
-  Paper,
-  Avatar,
-  Skeleton
+  Paper
 } from '@mui/material';
 import {
   ArrowBack,
@@ -36,17 +33,13 @@ import {
   Favorite,
   FavoriteBorder,
   AccessTime,
-  Star,
-  LocationOn,
-  Phone,
   Add,
   Remove,
   ShoppingCart,
-  Info,
   LocalOffer,
   DeliveryDining
 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import toast from 'react-hot-toast';

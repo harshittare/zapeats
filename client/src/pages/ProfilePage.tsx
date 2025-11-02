@@ -9,7 +9,6 @@ import {
   Grid,
   TextField,
   Button,
-  Divider,
   IconButton,
   Chip,
   Paper,
@@ -30,21 +29,16 @@ import {
   Edit,
   LocationOn,
   CreditCard,
-  Star,
   Notifications,
   Security,
-  Language,
   DarkMode,
   Add,
   Delete,
-  Phone,
-  Email,
   Person,
   Home,
   Work,
   Favorite,
-  LocalOffer,
-  EmojiEvents
+  LocalOffer
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -100,7 +94,6 @@ const ProfilePage = () => {
   
   const [selectedTab, setSelectedTab] = useState(0);
   const [editDialog, setEditDialog] = useState(false);
-  const [addressDialog, setAddressDialog] = useState(false);
   const [user, setUser] = useState(userData);
   const [editForm, setEditForm] = useState({
     name: userData.name,
@@ -259,7 +252,7 @@ const ProfilePage = () => {
           <Button
             variant="outlined"
             startIcon={<Add />}
-            onClick={() => setAddressDialog(true)}
+            onClick={() => toast('Add address feature coming soon!')}
           >
             Add Address
           </Button>
